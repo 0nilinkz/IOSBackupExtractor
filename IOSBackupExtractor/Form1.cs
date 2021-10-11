@@ -38,10 +38,12 @@ namespace IOSBackupExtractor
             string pathA = userprofile + @"\AppData\Roaming\Apple Computer\MobileSync\Backup\";
             string pathB = userprofile + @"\Apple\MobileSync\backup";
             string pathC = userprofile + @"\Apple Computer\MobileSync\backup";
-            List<string> possiblePaths = new List<string>();
-            possiblePaths.Add(pathA);
-            possiblePaths.Add(pathB);
-            possiblePaths.Add(pathC);
+            List<string> possiblePaths = new List<string>
+            {
+                pathA,
+                pathB,
+                pathC
+            };
 
             //Possible path
             string potentialPath = string.Empty;
@@ -114,8 +116,8 @@ namespace IOSBackupExtractor
             if (BrowserDialog1.SelectedPath != string.Empty && BrowserDialog2.SelectedPath != string.Empty)
             {
                 BackgroundWorker1.DoWork += ProduceExtractedFiles;
-                BackgroundWorker1.ProgressChanged += bgw_ProgressChanged;
-                BackgroundWorker1.RunWorkerCompleted += bgw_RunWorkerCompleted;
+                BackgroundWorker1.ProgressChanged += BackgroundWorkerProgressChanged;
+                BackgroundWorker1.RunWorkerCompleted += BackgroundWorkerCompleted;
                 BackgroundWorker1.RunWorkerAsync();
 
                 //Disable UI components when running
@@ -141,7 +143,7 @@ namespace IOSBackupExtractor
             BackgroundWorker1.CancelAsync();
         }
 
-        private void bgw_ProgressChanged(object sender, ProgressChangedEventArgs e)
+        private void BackgroundWorkerProgressChanged(object sender, ProgressChangedEventArgs e)
         {
             //Update UI on progress
             int Progress = e.ProgressPercentage;
@@ -154,7 +156,7 @@ namespace IOSBackupExtractor
             }
         }
 
-        private void bgw_RunWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
+        private void BackgroundWorkerCompleted(object sender, RunWorkerCompletedEventArgs e)
         {
             //Job completed/canceled
             //Reset UI components
@@ -180,10 +182,12 @@ namespace IOSBackupExtractor
 
             using var cmd = new SQLiteCommand(stm, con);
 
-            FileExtractor fileExtractor = new FileExtractor();
-            fileExtractor.TargetDirectory = BackupFolderTextBox.Text; //Path containing parent backup folder this should contain a sqlite manifest file
-            fileExtractor.DestinationDirectory = DestinationTextBox.Text + @"\"; //Destination Directory set via user
-            fileExtractor.BackgroundWorker1 = BackgroundWorker1; //for reporting progress for UI
+            FileExtractor fileExtractor = new FileExtractor
+            {
+                TargetDirectory = BackupFolderTextBox.Text, //Path containing parent backup folder this should contain a sqlite manifest file
+                DestinationDirectory = DestinationTextBox.Text + @"\", //Destination Directory set via user
+                BackgroundWorker1 = BackgroundWorker1 //for reporting progress for UI
+            };
             using SQLiteDataReader rdr = cmd.ExecuteReader();
             while (rdr.Read())
             {
